@@ -6,14 +6,14 @@ image_thumbs_loc: "/images/thumbs"
 google_analytics: "UA-46465113-2"
 
 # UI configs
-title: "Photography by Ram Patra"
+title: "Photography by Yiran"
 subtitle: "See the world through my eyes!"
-author: "Ram Patra"
+author: "Yiran"
 header:
  title: "Photography"
- subtitle: "by Ram Patra"
+ subtitle: "by Yiran"
 footer:
- name: "Hey there, my name is Ram"
+ name: "Hey there, my name is Yiran"
  bio: "I am a developer and a tech aficionado from India. Love making teeny tiny apps solving tiny problems in life and now learning photography."
  github: "Want a website like this for yourself for free? Just <a href=\"https://github.com/ramswaroop/photography\">fork this repo on github</a> ;)"
 web_design: "AJ"
@@ -22,7 +22,7 @@ web_design: "AJ"
 exif: '[{"tag": "Model", "icon": "camera-retro"}, {"tag": "FNumber", "icon": "dot-circle-o"}, {"tag": "ExposureTime", "icon": "clock-o"}, {"tag": "ISOSpeedRatings", "icon": "info-circle"}]'
 social_urls:
   twitter: "https://www.twitter.com/ram__patra"
-  instagram: "https://www.instagram.com/ram_patra"
+  instagram: "https://www.instagram.com/ravenfrank_m/"
   dribbble: "https://dribbble.com/rampatra"
-  linkedin: "https://in.linkedin.com/in/ram-patra"
-  github: "https://www.github.com/rampatra"
+  linkedin: "https://www.linkedin.com/in/yiran-mao-6aba26233/"
+  github: "https://github.com/yiran-frank-mao"
