@@ -1,17 +1,17 @@
 # Base configs
-image_fulls_loc: "/images/fulls"
+image_fulls_loc:  "/images/fulls"
 image_thumbs_loc: "/images/thumbs"
 
 # UI configs
 title: "Shots by Yiran"
-subtitle: "A chapter from my life"
+subtitle: "See through my eyes"
 author:  "Yiran Mao"
 header:
  title: "Shots"
  subtitle: "by Yiran Mao"
 footer:
- name: "Hey there!'"
- bio: "I’m a software developer who writes. And 3D print. And photograph. Basically, following my curiosity and trying to find my purpose on this beautiful big blue ball. Learn more at: https://swiftlysingh.com"
+ name: "Hey there!"
+ bio: "I’m a PhB/B.Phil student@ANU, focusing on math, computer science and physics. Star wars fan, badminton and hiking lover."
 social_urls:
   instagram: "https://www.instagram.com/ravenfrank_m/"
-  twitter: "https://twitter.com/pushpinderpal_"
+  twitter: "https://twitter.com/RavenclawPlus"
