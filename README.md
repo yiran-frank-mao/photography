@@ -1,20 +1,5 @@
-
-[![Deployed from Instagram](https://github.com/swiftlysingh/Shots/actions/workflows/updateFromInstagram.yml/badge.svg)](https://github.com/swiftlysingh/Shots/actions/workflows/updateFromInstagram.yml)
-
-[![Photography](https://img.shields.io/badge/Photography-Shots-black?style=for-the-badge)](https://shots.swiftlysingh.com/) 
-
 # Shots 
 A tracker and ad free version of [rampatra/photography](https://github.com/rampatra/photography) with automations. You can set up [Zapier Workflow](https://zapier.com/shared/c6dc58c746bbe5c1fd42d86c9bda39e75ca6610b) which will connect to Instagram.
-
-## Highlights
-1. Easy setup and you get a site of your own for __free__.
-2. To add new pictures, you need to just upload them. __No code__ changes required.
-3. This I like the most, you get to see EXIF data like __aperture, shutter speed, iso__ etc when you click on any image automagically.
-
-## Quick Start
-If you know a tad about tech and love taking pictures then this open-source project may help you setup a website to showcase
-all your creations without effort. And not just that, with this you need not pay a single dime to host your website as
-it's hosted by GitHub for __free__.
 
 **Just follow the below steps and your website would be live in no time:**
 
