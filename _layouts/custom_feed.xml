@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>{{ site.title }}</title>
+    <link>{{ site.url }}</link>
+    <description>{{ site.description }}</description>
+    {% for image in site.static_files %}
+      {% if image.path contains 'images/fulls' %}
+      <item>
+        <title>{{ image.path | split: '/' | last }}</title>
+        <link>{{ site.url }}{{ image.path }}</link>
+        <description>An image from my gallery: {{ image.path | split: '/' | last }}</description>
+        <pubDate>{{ "now" | date_to_rfc822 }}</pubDate>
+        <enclosure url="{{ site.url }}{{ image.path }}" type="image/jpeg" />
+      </item>
+      {% endif %}
+    {% endfor %}
+  </channel>
+</rss>
