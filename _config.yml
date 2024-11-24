@@ -15,3 +15,10 @@ footer:
 social_urls:
   instagram: "https://www.instagram.com/ravenfrank_m/"
   twitter: "https://twitter.com/YiranFrankM"
+
+# Feed configs
+plugins:
+  - jekyll-feed
+title: Yiran's Shots
+description: Welcome to my Photo Gallery!
+author: Yiran Mao
