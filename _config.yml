@@ -24,4 +24,4 @@ description: Welcome to my Photo Gallery!
 author: Yiran Mao
 
 feed:
-  path: custom_feed.xml
+  path: _layouts/custom_feed.xml
