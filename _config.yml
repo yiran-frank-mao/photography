@@ -22,3 +22,6 @@ plugins:
 title: Yiran's Shots
 description: Welcome to my Photo Gallery!
 author: Yiran Mao
+
+feed:
+  path: /feed.xml
