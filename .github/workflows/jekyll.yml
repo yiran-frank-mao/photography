@@ -55,6 +55,7 @@ jobs:
 
   # Build job
   build:
+    needs: generate-feed
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout
