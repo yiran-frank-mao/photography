@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
   <title>Yiran's Shots</title>
   <link href="https://yiran-frank-mao.github.io/photography"/>
-  <updated>2025-07-14T12:55:34.804910Z</updated>
+  <updated>2025-07-15T11:23:55.977033Z</updated>
   <author>
     <name>Yiran Mao</name>
   </author>
@@ -285,6 +285,14 @@
     <link href="https://raw.githubusercontent.com/yiran-frank-mao/photography/master/images/fulls/18.jpg"/>
     <updated>2023-11-30T12:00:00Z</updated>
     <summary>18</summary>
+  </entry>
+  <entry>
+    <title>Blue Lake</title>
+    <content>&lt;figure&gt;&lt;img alt=&quot;BlueLake.jpg&quot; referrerpolicy=&quot;no-referrer&quot; src=&quot;https://raw.githubusercontent.com/yiran-frank-mao/photography/master/images/fulls/BlueLake.jpg&quot; /&gt;&lt;/figure&gt;    
+ Shot by Yiran</content>
+    <link href="https://raw.githubusercontent.com/yiran-frank-mao/photography/master/images/fulls/BlueLake.jpg"/>
+    <updated>2023-11-30T12:00:00Z</updated>
+    <summary>Blue Lake</summary>
   </entry>
   <entry>
     <title>12</title>
