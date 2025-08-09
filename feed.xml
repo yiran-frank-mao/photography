@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
   <title>Yiran's Shots</title>
   <link href="https://yiran-frank-mao.github.io/photography"/>
-  <updated>2025-08-09T04:06:31.112807Z</updated>
+  <updated>2025-08-09T04:22:53.594928Z</updated>
   <author>
     <name>Yiran Mao</name>
   </author>
@@ -149,6 +149,14 @@
     <link href="https://raw.githubusercontent.com/yiran-frank-mao/photography/master/images/fulls/30.jpg"/>
     <updated>2024-09-04T17:45:47Z</updated>
     <summary>30</summary>
+  </entry>
+  <entry>
+    <title>Auckland</title>
+    <content>&lt;figure&gt;&lt;img alt=&quot;Auckland.jpg&quot; referrerpolicy=&quot;no-referrer&quot; src=&quot;https://raw.githubusercontent.com/yiran-frank-mao/photography/master/images/fulls/Auckland.jpg&quot; /&gt;&lt;/figure&gt;SONY ILCE-6400 55 6918863/1000000 -5554589/1000000
+ Shot by Yiran</content>
+    <link href="https://raw.githubusercontent.com/yiran-frank-mao/photography/master/images/fulls/Auckland.jpg"/>
+    <updated>2022-11-25T14:54:12Z</updated>
+    <summary>Auckland</summary>
   </entry>
   <entry>
     <title>Narooma Coast</title>
