@@ -42,7 +42,7 @@ before(async () => {
                     response.writeHead(404).end();
                     return;
                 }
-                const [width, height] = sizes[Number(image[2]) % sizes.length];
+                const [width, height] = image[1] === 'thumbs' ? [512, 512] : sizes[Number(image[2]) % sizes.length];
                 response.setHeader('Content-Type', 'image/svg+xml');
                 response.end(`<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}"><rect width="100%" height="100%" fill="#4682b4"/></svg>`);
                 return;
@@ -115,12 +115,18 @@ function assertUncropped(gallery) {
 }
 
 test('configuration normalizes layout names and defaults to the original Thumbnail', async t => {
+    const config = await readFile(path.join(root, '_config.yml'), 'utf8');
+    const configuredLayout = config.match(/^gallery_layout:\s*(.*)$/m)[1].trim().toLowerCase();
+    const configuredExpected = ['masonry', 'justified', 'carousel'].includes(configuredLayout) ? configuredLayout : 'thumbnail';
     for (const [input, expected] of [
-        [undefined, 'thumbnail'], ['', 'thumbnail'], ['configured', 'thumbnail'], ['unknown', 'thumbnail'],
+        [undefined, 'thumbnail'], ['', 'thumbnail'], ['configured', configuredExpected], ['unknown', 'thumbnail'],
         ['Thumbnail', 'thumbnail'], [' MaSoNrY ', 'masonry'], ['JUSTIFIED', 'justified'], ['Carousel', 'carousel']
     ]) {
         const page = await openGallery(t, input);
         assert.equal(await page.locator('#main').getAttribute('data-layout'), expected);
+        const imageFolder = ['masonry', 'justified'].includes(expected) ? 'fulls' : 'thumbs';
+        const sources = await page.locator('#main img').evaluateAll(imgs => imgs.map(img => img.getAttribute('src')));
+        assert.deepEqual(sources, sizes.map((_, i) => `/photos/images/${imageFolder}/${i}.jpg`));
         if (expected === 'thumbnail') {
             assert.equal(await page.locator('#main').evaluate(main => main.classList.contains('gallery-ready')), false);
             assert.equal(await page.locator('#main img').first().evaluate(img => getComputedStyle(img).display), 'none');
@@ -168,7 +174,7 @@ for (const layout of ['Masonry', 'Justified']) {
 
     test(layout + ' relayouts after late or failed images', async t => {
         const page = await openGallery(t, layout);
-        await page.locator('#main img').first().evaluate(img => { img.src = '/photos/images/thumbs/4.jpg'; });
+        await page.locator('#main img').first().evaluate(img => { img.src = '/photos/images/fulls/4.jpg'; });
         await page.waitForFunction(() => {
             const tile = document.querySelector('#main .thumb');
             return Math.abs(tile.offsetWidth / tile.offsetHeight - 8) < 0.1;

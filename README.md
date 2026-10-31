@@ -28,6 +28,8 @@ gallery_layout: Masonry
 | `Carousel` | One uncropped photo at a time, with previous/next buttons, arrow keys when focused, and horizontal swipes. |
 
 Names are case-insensitive. Missing or unrecognized values use `Thumbnail`.
+Masonry and Justified display images from `image_fulls_loc` so their original
+aspect ratios are preserved, even when the files in `image_thumbs_loc` are square.
 Every layout keeps the existing click-to-expand viewer and EXIF information.
 Carousel navigation stops at the first and last images, shows a position counter,
 and adds navigation dots for galleries with 2–12 images.
