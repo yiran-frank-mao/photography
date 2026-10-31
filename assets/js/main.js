@@ -216,6 +216,7 @@
 
         // Main.
         var $main = $('#main'),
+            galleryLayout = $main.attr('data-layout') || 'thumbnail',
             exifDatas = {};
 
         // Thumbs.
@@ -233,15 +234,15 @@
             // This sets the background of the "image" <span> to the image pointed to by its child
             // <img> (which is then hidden). Gives us way more flexibility.
 
-            // Set background.
-            $image.css('background-image', 'url(' + $image_img.attr('src') + ')');
+            if (galleryLayout === 'thumbnail') {
+                // Preserve the original cropped thumbnail layout.
+                $image.css('background-image', 'url(' + $image_img.attr('src') + ')');
 
-            // Set background position.
-            if (x = $image_img.data('position'))
-                $image.css('background-position', x);
+                if (x = $image_img.data('position'))
+                    $image.css('background-position', x);
 
-            // Hide original img.
-            $image_img.hide();
+                $image_img.hide();
+            }
 
             // Hack: IE<11 doesn't support pointer-events, which means clicks to our image never
             // land as they're blocked by the thumbnail's caption overlay gradient. This just forces
@@ -259,6 +260,8 @@
             });
 
         });
+
+        initializeGallery();
 
         // Poptrox.
         $main.poptrox({
@@ -305,6 +308,207 @@
             .on('+xsmall', function () {
                 $main[0]._poptrox.windowMargin = 0;
             });
+
+        function initializeGallery() {
+            if (galleryLayout === 'thumbnail') return;
+
+            var $tiles = $main.children('.thumb');
+            $main.addClass('gallery-ready');
+
+            if (galleryLayout === 'carousel') {
+                initializeCarousel($tiles);
+                return;
+            }
+
+            var pending = false,
+                previousWidth = 0;
+
+            function scheduleLayout() {
+                if (pending) return;
+                pending = true;
+                window.requestAnimationFrame(function () {
+                    pending = false;
+                    var width = $main.width();
+                    if (!width) return;
+                    previousWidth = width;
+                    layoutTiles($tiles, width);
+                });
+            }
+
+            // Cached, late, and failed images all receive usable geometry.
+            $tiles.find('img').on('load error', scheduleLayout);
+            $window.on('resize', scheduleLayout);
+            if (window.ResizeObserver) {
+                var observer = new ResizeObserver(function () {
+                    if ($main.width() !== previousWidth) scheduleLayout();
+                });
+                observer.observe($main[0]);
+            }
+            scheduleLayout();
+        }
+
+        function layoutTiles($tiles, width) {
+            var tiles = $tiles.map(function () {
+                var img = $(this).find('img')[0];
+                return { element: this, ratio: img.naturalWidth / img.naturalHeight || 1.5 };
+            }).get();
+
+            function place(tile, left, top, tileWidth, height) {
+                $(tile.element).css({ left: left, top: top, width: tileWidth, height: height });
+            }
+
+            if (galleryLayout === 'masonry') {
+                var gap = 8,
+                    columns = Math.max(1, Math.floor((width + gap) / (220 + gap))),
+                    columnWidth = (width - gap * (columns - 1)) / columns,
+                    heights = [];
+                for (var c = 0; c < columns; c++) heights.push(0);
+                tiles.forEach(function (tile) {
+                    var shortest = heights.indexOf(Math.min.apply(Math, heights)),
+                        height = columnWidth / tile.ratio;
+                    place(tile, shortest * (columnWidth + gap), heights[shortest], columnWidth, height);
+                    heights[shortest] += height + gap;
+                });
+                $main.height(Math.max(0, Math.max.apply(Math, heights) - gap));
+                return;
+            }
+
+            var rowGap = 4,
+                targetHeight = Math.min(220, width * 0.4),
+                row = [],
+                ratioSum = 0,
+                top = 0;
+
+            function rowHeight(count, sum) {
+                return (width - rowGap * (count - 1)) / sum;
+            }
+
+            function finishRow(height) {
+                var left = 0;
+                row.forEach(function (tile) {
+                    var tileWidth = tile.ratio * height;
+                    place(tile, left, top, tileWidth, height);
+                    left += tileWidth + rowGap;
+                });
+                top += height + rowGap;
+                row = [];
+                ratioSum = 0;
+            }
+
+            tiles.forEach(function (tile) {
+                // A panorama gets its own row without stretching the preceding row.
+                if (tile.ratio * targetHeight >= width) {
+                    if (row.length) finishRow(Math.min(targetHeight, rowHeight(row.length, ratioSum)));
+                    row = [tile];
+                    finishRow(width / tile.ratio);
+                    return;
+                }
+                var withTile = rowHeight(row.length + 1, ratioSum + tile.ratio);
+                if (row.length && withTile < targetHeight) {
+                    var withoutTile = rowHeight(row.length, ratioSum);
+                    if (withoutTile - targetHeight <= targetHeight - withTile) {
+                        finishRow(withoutTile);
+                    } else {
+                        row.push(tile);
+                        finishRow(withTile);
+                        return;
+                    }
+                }
+                row.push(tile);
+                ratioSum += tile.ratio;
+            });
+            // Keep an incomplete last row at the target height.
+            if (row.length) finishRow(Math.min(targetHeight, rowHeight(row.length, ratioSum)));
+            $main.height(Math.max(0, top - rowGap));
+        }
+
+        function initializeCarousel($tiles) {
+            var count = $tiles.length;
+            if (!count) return;
+
+            var $viewport = $('<div class="carousel-viewport" />').appendTo($main),
+                $track = $('<div class="carousel-track" />').append($tiles).appendTo($viewport),
+                index = 0,
+                $previous, $next, $counter,
+                $dots = $();
+
+            $main.attr({ tabindex: '0', role: 'region', 'aria-roledescription': 'carousel', 'aria-label': 'Photo gallery' });
+            $tiles.each(function (i) {
+                $(this).attr({ role: 'group', 'aria-roledescription': 'slide', 'aria-label': (i + 1) + ' / ' + count });
+            });
+
+            function goTo(nextIndex) {
+                index = Math.max(0, Math.min(count - 1, nextIndex));
+                $track.css('transform', 'translateX(-' + index * 100 + '%)');
+                $tiles.each(function (i) {
+                    $(this).attr('aria-hidden', i !== index ? 'true' : 'false')
+                        .find('a').attr('tabindex', i === index ? '0' : '-1');
+                });
+                if ($previous) {
+                    $previous.prop('disabled', index === 0);
+                    $next.prop('disabled', index === count - 1);
+                    $counter.text((index + 1) + ' / ' + count);
+                    $dots.each(function (i) {
+                        $(this).attr('aria-current', i === index ? 'true' : null);
+                    });
+                }
+            }
+
+            if (count > 1) {
+                $previous = $('<button type="button" class="carousel-nav previous" aria-label="Previous image">&#10094;</button>').appendTo($viewport);
+                $next = $('<button type="button" class="carousel-nav next" aria-label="Next image">&#10095;</button>').appendTo($viewport);
+                $counter = $('<div class="carousel-counter" aria-live="polite" aria-atomic="true" />').appendTo($viewport);
+                $previous.on('click', function () { goTo(index - 1); });
+                $next.on('click', function () { goTo(index + 1); });
+                if (count <= 12) {
+                    var $indicators = $('<div class="carousel-indicators" />').appendTo($main);
+                    $tiles.each(function (i) {
+                        $('<button type="button" class="carousel-dot" />')
+                            .attr('aria-label', 'Go to image ' + (i + 1))
+                            .on('click', function () { goTo(i); }).appendTo($indicators);
+                    });
+                    $dots = $indicators.children();
+                }
+            }
+
+            $main.on('keydown', function (event) {
+                if ($body.hasClass('modal-active') || $body.hasClass('content-active')) return;
+                if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    goTo(index + (event.key === 'ArrowLeft' ? -1 : 1));
+                }
+            });
+
+            var touchStart = null,
+                swiped = false;
+            $viewport.on('touchstart', function (event) {
+                var touches = event.originalEvent.touches;
+                touchStart = touches.length === 1 ? { x: touches[0].clientX, y: touches[0].clientY } : null;
+                swiped = false;
+            }).on('touchend', function (event) {
+                if (!touchStart) return;
+                var touch = event.originalEvent.changedTouches[0],
+                    dx = touch.clientX - touchStart.x,
+                    dy = touch.clientY - touchStart.y;
+                if (Math.abs(dx) > 30 && Math.abs(dx) > Math.abs(dy)) {
+                    goTo(index + (dx < 0 ? 1 : -1));
+                    swiped = true;
+                    window.setTimeout(function () { swiped = false; }, 350);
+                }
+                touchStart = null;
+            }).on('touchcancel', function () { touchStart = null; });
+            // Do not open the lightbox from the synthetic click following a swipe.
+            $viewport[0].addEventListener('click', function (event) {
+                if (swiped) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    swiped = false;
+                }
+            }, true);
+
+            goTo(0);
+        }
 
         function getExifDataMarkup(img) {
             var exif = fetchExifData(img);

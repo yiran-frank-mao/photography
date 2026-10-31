@@ -17,7 +17,11 @@ layout: default
     </header>
 
     <!-- Main -->
-    <div id="main">
+    {% assign gallery_layout = site.gallery_layout | default: 'Thumbnail' | strip | downcase %}
+    {% unless gallery_layout == 'masonry' or gallery_layout == 'justified' or gallery_layout == 'carousel' %}
+        {% assign gallery_layout = 'thumbnail' %}
+    {% endunless %}
+    <div id="main" class="gallery-{{ gallery_layout }}" data-layout="{{ gallery_layout }}">
         {% for image in site.static_files %}
         {% if image.path contains 'fulls' %}
         <article class="thumb">

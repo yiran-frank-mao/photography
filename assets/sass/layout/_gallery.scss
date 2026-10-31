@@ -1,0 +1,109 @@
+// Alternate layouts use the real image dimensions instead of cropped backgrounds.
+#main.gallery-ready {
+    display: block;
+    position: relative;
+
+    .thumb {
+        min-height: 0;
+        transition-delay: 0s;
+
+        > .image > img {
+            display: block;
+            height: 100%;
+            width: 100%;
+            object-fit: contain;
+        }
+    }
+
+    &.gallery-masonry > .thumb,
+    &.gallery-justified > .thumb {
+        position: absolute;
+    }
+
+    &.gallery-carousel {
+        .carousel-viewport {
+            position: relative;
+            overflow: hidden;
+            touch-action: pan-y;
+        }
+
+        .carousel-track {
+            display: flex;
+            transition: transform 0.3s ease;
+        }
+
+        .thumb {
+            flex: 0 0 100%;
+            height: 70vh;
+            max-height: 640px;
+            width: 100%;
+
+            &[aria-hidden="true"] {
+                visibility: hidden;
+            }
+        }
+
+        .carousel-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0, 0, 0, 0.65);
+            border-radius: 50%;
+            box-shadow: none;
+            font-size: 1.25em;
+            height: 2.5em;
+            line-height: 2.5em;
+            padding: 0;
+            width: 2.5em;
+            z-index: 2;
+
+            &.previous { left: 0.5em; }
+            &.next { right: 0.5em; }
+        }
+
+        .carousel-counter {
+            position: absolute;
+            bottom: 0.75em;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.65);
+            border-radius: 1em;
+            color: #fff;
+            padding: 0.1em 0.75em;
+            pointer-events: none;
+        }
+
+        .carousel-indicators {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            padding: 0.5em;
+        }
+
+        .carousel-dot {
+            border-radius: 50%;
+            height: 1em;
+            line-height: 1em;
+            margin: 0.25em;
+            padding: 0;
+            width: 1em;
+
+            &[aria-current="true"] {
+                background: #fff;
+            }
+        }
+
+        &:focus-visible,
+        button:focus-visible,
+        a:focus-visible {
+            outline: 2px solid #fff !important;
+            outline-offset: -2px;
+        }
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #main.gallery-ready.gallery-carousel .carousel-track {
+        transition: none;
+    }
+}

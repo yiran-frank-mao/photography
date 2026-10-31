@@ -12,7 +12,40 @@ A tracker and ad free version of [rampatra/photography](https://github.com/rampa
 
 You can change my name in `_config.yml` file.
 
-hhh
+## Gallery layouts
+
+Choose a layout in `_config.yml`, then rebuild the site:
+
+```yaml
+gallery_layout: Masonry
+```
+
+| Value | Layout |
+| --- | --- |
+| `Thumbnail` | The original responsive grid with cropped thumbnails (default). |
+| `Masonry` | Equal-width columns; each uncropped photo goes into the shortest column. |
+| `Justified` | Uncropped photos in equal-height rows that fill the gallery width. An incomplete last row stays at the target height. |
+| `Carousel` | One uncropped photo at a time, with previous/next buttons, arrow keys when focused, and horizontal swipes. |
+
+Names are case-insensitive. Missing or unrecognized values use `Thumbnail`.
+Every layout keeps the existing click-to-expand viewer and EXIF information.
+Carousel navigation stops at the first and last images, shows a position counter,
+and adds navigation dots for galleries with 2–12 images.
+
+The alternate layouts follow the layout behavior of
+[Gallery View for Obsidian](https://github.com/mkshp-dev/obsidian-gallery-plugin).
+
+To rebuild the committed CSS and JavaScript after editing their sources:
+
+```sh
+npm ci
+npx gulp compile-sass
+```
+
+Run the browser regression checks with `npm test`. They use an installed
+`/usr/bin/chromium`, a browser specified by `CHROMIUM_PATH`, or Playwright's
+Chromium (install it with `npx playwright install chromium`). The tests render
+the Liquid templates with fixture images and exercise the committed assets.
 
 ## Acknowledgment
 - I am not a web developer. All the credit for this website goes to [Ram](https://github.com/rampatra).
