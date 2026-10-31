@@ -4,7 +4,7 @@ image_thumbs_loc: "/images/thumbs"
 
 # UI configs
 # Gallery layout: Thumbnail (default), Masonry, Justified, or Carousel.
-gallery_layout: Thumbnail
+gallery_layout: Masonry
 title: "Shots by Yiran"
 subtitle: "See through my eyes"
 author:  "Yiran Mao"
