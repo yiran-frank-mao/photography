@@ -138,7 +138,7 @@ test('configuration normalizes layout names and defaults to the original Thumbna
 for (const layout of ['Masonry', 'Justified']) {
     test(layout + ' preserves ratios and adapts to desktop and mobile widths', async t => {
         const page = await openGallery(t, layout);
-        for (const width of [1100, 375, 1680]) {
+        for (const [width, expectedColumns] of [[1100, 3], [375, 1], [768, 2], [1680, 4], [1920, 4], [2560, 4], [3840, 4]]) {
             await page.setViewportSize({ width, height: 800 });
             await page.waitForFunction(() => {
                 const main = document.querySelector('#main');
@@ -149,9 +149,11 @@ for (const layout of ['Masonry', 'Justified']) {
             const gallery = await geometry(page);
             assertUncropped(gallery);
             if (layout === 'Masonry') {
+                assert.equal(new Set(gallery.tiles.map(tile => tile.left)).size, expectedColumns,
+                    'desktop column count stays limited while mobile remains responsive');
                 const heights = new Map();
                 for (const tile of gallery.tiles) {
-                    const shortest = Math.min(...Array.from({ length: Math.max(1, Math.floor((width + 8) / 228)) }, (_, i) => heights.get(i) || 0));
+                    const shortest = Math.min(...Array.from({ length: expectedColumns }, (_, i) => heights.get(i) || 0));
                     assert.ok(Math.abs(tile.top - shortest) <= 1, 'placed into shortest column');
                     const column = Math.round(tile.left / (tile.width + 8));
                     heights.set(column, tile.top + tile.height + 8);
@@ -165,8 +167,15 @@ for (const layout of ['Masonry', 'Justified']) {
                 for (const row of rows.values()) {
                     assert.ok(row.every(tile => Math.abs(tile.height - row[0].height) < 1), 'equal row heights');
                     const end = row.at(-1).left + row.at(-1).width;
-                    assert.ok(Math.abs(end - gallery.width) < 1 || row[0].height <= Math.min(220, width * 0.4) + 1,
+                    assert.ok(Math.abs(end - gallery.width) < 1 || row[0].height <= width * 0.4 + 1,
                         'rows fill width unless intentionally left at target height');
+                }
+                if (width >= 1680) {
+                    assert.ok(Math.max(...gallery.tiles.map(tile => tile.height)) >= width / 5,
+                        'desktop rows grow with the gallery instead of keeping small previews');
+                }
+                if (width === 375) {
+                    assert.ok(gallery.tiles.at(-1).height <= 151, 'short mobile rows keep their existing height cap');
                 }
             }
         }

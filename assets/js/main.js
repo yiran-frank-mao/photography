@@ -359,7 +359,8 @@
 
             if (galleryLayout === 'masonry') {
                 var gap = 8,
-                    columns = Math.max(1, Math.floor((width + gap) / (220 + gap))),
+                    // Keep photos large on desktop, including ultrawide displays.
+                    columns = Math.min(4, Math.max(1, Math.floor((width + gap) / (320 + gap)))),
                     columnWidth = (width - gap * (columns - 1)) / columns,
                     heights = [];
                 for (var c = 0; c < columns; c++) heights.push(0);
@@ -374,7 +375,8 @@
             }
 
             var rowGap = 4,
-                targetHeight = Math.min(220, width * 0.4),
+                // Grow rows with the gallery while retaining the mobile height cap.
+                targetHeight = Math.min(Math.max(220, width / 4), width * 0.4),
                 row = [],
                 ratioSum = 0,
                 top = 0;

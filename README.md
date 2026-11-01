@@ -30,6 +30,9 @@ gallery_layout: Masonry
 Names are case-insensitive. Missing or unrecognized values use `Thumbnail`.
 Masonry and Justified display images from `image_fulls_loc` so their original
 aspect ratios are preserved, even when the files in `image_thumbs_loc` are square.
+Masonry uses columns at least 320 pixels wide (where space permits), capped at
+four columns on large displays. Justified rows grow with the gallery width to
+keep desktop previews large, while retaining smaller rows on phones.
 Every layout keeps the existing click-to-expand viewer and EXIF information.
 Carousel navigation stops at the first and last images, shows a position counter,
 and adds navigation dots for galleries with 2–12 images.
