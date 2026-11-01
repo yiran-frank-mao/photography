@@ -1,5 +1,5 @@
 # Shots
-A tracker and ad free version of [rampatra/photography](https://github.com/rampatra/photography) with automations. You can set up [Zapier Workflow](https://zapier.com/shared/c6dc58c746bbe5c1fd42d86c9bda39e75ca6610b) which will connect to Instagram.
+A tracker and ad free version of [rampatra/photography](https://github.com/rampatra/photography).
 
 **Just follow the below steps and your website would be live in no time:**
 
@@ -10,7 +10,7 @@ A tracker and ad free version of [rampatra/photography](https://github.com/rampa
 5. Update `baseurl` field in `_config.yml` file with whatever domain you used in step 4.
 6. And that's it, your website is set. To view, go to [shots.pushpinderpalsingh.com/](https://shots.pushpinderpalsingh.com/) (or whatever you have in the CNAME file) and if you don't have one, you can go to [[yourusername].github.io/Shots](http://yourusername.github.io/Shots)
 
-You can change my name in `_config.yml` file.
+You can modify options trough `_config.yml` file.
 
 ## Gallery layouts
 
