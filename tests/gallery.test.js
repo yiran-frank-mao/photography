@@ -408,7 +408,7 @@ test('Display mode cross-fades in place when motion is reduced', async t => {
 test('Display mode adapts to the screen and opens from a link', async t => {
     const page = await openGallery(t, 'Masonry', sizes.length, { reducedMotion: 'no-preference', hash: '#display' });
     assert.ok(await page.getByRole('dialog', { name: 'Display mode' }).isVisible());
-    for (const [width, height, rows] of [[1100, 800, 2], [375, 700, 4], [700, 375, 2], [1920, 1080, 2], [1080, 1920, 4]]) {
+    for (const [width, height, rows] of [[1100, 800, 2], [375, 700, 4], [700, 375, 2], [1920, 1200, 2], [820, 1180, 3], [2560, 1440, 3]]) {
         await page.setViewportSize({ width, height });
         await page.waitForFunction(rows => document.querySelectorAll('.display-row').length === rows, rows);
         assertDisplayFills(await displayState(page), sizes.length, { uncropped: true });

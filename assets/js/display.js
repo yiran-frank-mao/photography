@@ -353,7 +353,7 @@
         var width = stage.clientWidth,
             height = stage.clientHeight;
         // Two rows on desktop, like the screensaver; more on tall or portrait screens.
-        return Math.max(2, Math.min(5, Math.ceil(height / Math.min(width * 0.6, 560))));
+        return Math.max(2, Math.min(5, Math.ceil(height / Math.min(width * 0.6, 640))));
     }
 
     function layout() {
