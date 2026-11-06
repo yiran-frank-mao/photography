@@ -40,9 +40,9 @@ gulp.task('sass:watch', function () {
 
 // minify js
 gulp.task('minify-js', function () {
-    return gulp.src('./assets/js/main.js')
+    return gulp.src(['./assets/js/main.js', './assets/js/display.js'])
         .pipe(uglify())
-        .pipe(rename({basename: 'main.min'}))
+        .pipe(rename({suffix: '.min'}))
         .pipe(gulp.dest('./assets/js'));
 });
 
