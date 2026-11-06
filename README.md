@@ -40,6 +40,24 @@ and adds navigation dots for galleries with 2–12 images.
 The alternate layouts follow the layout behavior of
 [Gallery View for Obsidian](https://github.com/mkshp-dev/obsidian-gallery-plugin).
 
+## Display mode
+
+The **Display** button in the site's bar opens a full-screen, photos-only
+slideshow modelled on the macOS *Shifting Tiles* screensaver (and
+[hermanbanken/shiftingtiles](https://github.com/hermanbanken/shiftingtiles)).
+Rows of uncropped photos fill the screen; every few seconds one photo zooms
+away and its row slides over to close the gap, alternating directions between
+rows, while a new photo enters from off screen. Photos are shuffled and not
+repeated on screen unless the gallery is too small to fill it.
+
+- `Space` pauses and resumes, the arrow keys shift immediately, and `Esc` exits.
+  The controls and cursor hide while idle.
+- The browser goes full screen where supported, and the screen is kept awake.
+- Desktop screens show two rows; tall and portrait screens show more.
+- With *reduce motion* enabled, photos cross-fade in place instead of moving.
+- Link to `index.html#display` to open the site straight into display mode,
+  for example on a TV or a photo frame.
+
 To rebuild the committed CSS and JavaScript after editing their sources:
 
 ```sh

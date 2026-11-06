@@ -1,0 +1,148 @@
+/* Display mode */
+
+	body.display-active {
+		overflow: hidden;
+	}
+
+	#display {
+		--display-gap: clamp(3px, 0.6vmin, 8px);
+		background: #000;
+		bottom: 0;
+		left: 0;
+		outline: 0;
+		overflow: hidden;
+		position: fixed;
+		right: 0;
+		top: 0;
+		-webkit-user-select: none;
+		user-select: none;
+		z-index: _misc(z-index-base) + 20000;
+
+		&[hidden] {
+			display: none;
+		}
+
+		&.idle {
+			cursor: none;
+		}
+	}
+
+	.display-stage {
+		display: flex;
+		flex-direction: column;
+		gap: var(--display-gap);
+		height: 100%;
+		padding: var(--display-gap);
+	}
+
+	.display-row {
+		display: flex;
+		flex: 1 1 0;
+		gap: var(--display-gap);
+		min-height: 0;
+		position: relative;
+
+		&.reverse {
+			flex-direction: row-reverse;
+		}
+	}
+
+	.display-tile {
+		background: _palette(bg-alt);
+		display: flex;
+		flex: 0 0 auto;
+		flex-direction: column;
+		gap: var(--display-gap);
+		height: 100%;
+		max-width: 90%;
+		overflow: hidden;
+		position: relative;
+		z-index: 1;
+
+		img {
+			display: block;
+			flex: 1 1 0;
+			min-height: 0;
+			object-fit: cover;
+			pointer-events: none;
+			width: 100%;
+		}
+
+		.display-swap {
+			position: absolute;
+		}
+
+		&.leaving {
+			max-width: none;
+			position: absolute;
+			top: 0;
+			z-index: 0;
+		}
+	}
+
+	.display-controls {
+		@include vendor('transition', 'opacity 0.4s ease, transform 0.4s ease');
+		-webkit-backdrop-filter: blur(12px);
+		backdrop-filter: blur(12px);
+		align-items: center;
+		background: rgba(20, 21, 23, 0.72);
+		border-radius: 2em;
+		bottom: 1.5em;
+		color: _palette(fg-bold);
+		display: flex;
+		gap: 0.25em;
+		left: 50%;
+		padding: 0.35em;
+		position: absolute;
+		transform: translateX(-50%);
+		z-index: 2;
+
+		#display.idle & {
+			opacity: 0;
+			pointer-events: none;
+			transform: translate(-50%, 0.5em);
+		}
+
+		button {
+			border-radius: 50%;
+			box-shadow: none;
+			font-size: 1em;
+			height: 2.5em;
+			letter-spacing: 0;
+			line-height: 2.5em;
+			padding: 0;
+			width: 2.5em;
+
+			&:hover {
+				background-color: rgba(255, 255, 255, 0.12);
+				box-shadow: none;
+				color: _palette(fg-bold) !important;
+			}
+
+			&:focus-visible {
+				outline: 2px solid _palette(fg-bold);
+				outline-offset: -2px;
+			}
+		}
+	}
+
+	.display-hint {
+		color: _palette(fg);
+		font-size: 0.8em;
+		padding: 0 0.75em 0 1.25em;
+		white-space: nowrap;
+
+		@media (hover: none) {
+			display: none;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.display-controls {
+			@include vendor('transition', 'opacity 0.4s ease');
+
+			#display.idle & {
+				transform: translateX(-50%);
+			}
+		}
+	}
