@@ -73,13 +73,66 @@ after(async () => {
     if (server) await new Promise(resolve => server.close(resolve));
 });
 
-async function openGallery(t, layout, count = sizes.length, { reducedMotion = 'reduce', hash = '', query = {} } = {}) {
+// A JPEG holding only an EXIF block with GPS coordinates, as cameras record them.
+function gpsJpeg([lat, lng], padding = 0) {
+    const tiff = Buffer.alloc(128);
+    function entry(offset, tag, type, count, value) {
+        tiff.writeUInt16LE(tag, offset);
+        tiff.writeUInt16LE(type, offset + 2);
+        tiff.writeUInt32LE(count, offset + 4);
+        tiff.writeUInt32LE(value, offset + 8);
+    }
+    function ref(offset, tag, letter) {
+        entry(offset, tag, 2, 2, 0);
+        tiff.write(letter, offset + 8, 'latin1');
+    }
+    tiff.write('II', 0, 'latin1');
+    tiff.writeUInt16LE(42, 2);
+    tiff.writeUInt32LE(8, 4);
+    tiff.writeUInt16LE(1, 8);
+    entry(10, 0x8825, 4, 1, 26);
+    tiff.writeUInt16LE(4, 26);
+    ref(28, 1, lat < 0 ? 'S' : 'N');
+    entry(40, 2, 5, 3, 80);
+    ref(52, 3, lng < 0 ? 'W' : 'E');
+    entry(64, 4, 5, 3, 104);
+    [lat, lng].forEach((value, i) => {
+        const hundredths = Math.round(Math.abs(value) * 360000);
+        [[Math.floor(hundredths / 360000), 1], [Math.floor(hundredths / 6000) % 60, 1], [hundredths % 6000, 100]]
+            .forEach(([numerator, denominator], j) => {
+                tiff.writeUInt32LE(numerator, 80 + i * 24 + j * 8);
+                tiff.writeUInt32LE(denominator, 84 + i * 24 + j * 8);
+            });
+    });
+    const app1 = Buffer.concat([Buffer.from('Exif\0\0', 'latin1'), tiff]),
+        length = Buffer.alloc(2);
+    length.writeUInt16BE(app1.length + 2);
+    return Buffer.concat([Buffer.from([0xFF, 0xD8, 0xFF, 0xE1]), length, app1, Buffer.alloc(padding), Buffer.from([0xFF, 0xD9])]);
+}
+
+async function openGallery(t, layout, count = sizes.length, { reducedMotion = 'reduce', hash = '', query = {}, locations = {}, ignoreRange = [] } = {}) {
     const page = await browser.newPage({ viewport: { width: 1100, height: 800 }, reducedMotion });
     t.after(() => page.close());
     const errors = [];
     page.on('pageerror', error => errors.push(error.message));
     t.after(() => assert.deepEqual(errors, [], 'no browser errors'));
     await page.route('https://**', route => route.abort());
+    // The map reads only the start of each full-size photo, where EXIF is stored.
+    page.metadataRequests = [];
+    await page.route(/\/photos\/images\/fulls\/\d+\.jpg$/, route => {
+        const request = route.request(),
+            index = Number(request.url().match(/(\d+)\.jpg$/)[1]);
+        if (request.resourceType() !== 'fetch') return route.continue();
+        page.metadataRequests.push({ index, range: request.headers().range });
+        if (!locations[index]) return route.continue();
+        if (ignoreRange.includes(index))
+            return route.fulfill({ status: 200, contentType: 'image/jpeg', body: gpsJpeg(locations[index], 1 << 20) });
+        const body = gpsJpeg(locations[index]);
+        return route.fulfill({
+            status: 206, contentType: 'image/jpeg', body,
+            headers: { 'Content-Range': `bytes 0-${body.length - 1}/${body.length + 4000000}` }
+        });
+    });
     // Supply fixture metadata before the gallery's ready callback caches captions.
     await page.addInitScript(() => document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('#main img').forEach(img => {
@@ -435,4 +488,137 @@ test('Display mode handles empty, single-image, and broken galleries', async t =
     const broken = await displayState(page);
     assertDisplayFills(broken, 3);
     assert.ok(visiblePaths(broken).every(path => /\/[0-2]\.jpg$/.test(path)), 'missing photos are skipped');
+});
+
+const mapLocations = {
+    0: [35.6595, 139.7005],
+    2: [-33.8688, 151.2093],
+    4: [-33.8688, 151.2093],
+    5: [-36.8485, 174.7633]
+};
+
+async function mapPins(page) {
+    return page.locator('.map-marker').evaluateAll(markers => markers.map(marker => {
+        const rect = marker.getBoundingClientRect();
+        return {
+            photo: new URL(marker.querySelector('img').src).pathname,
+            count: Number(marker.querySelector('.map-pin-count')?.textContent || 1),
+            left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom
+        };
+    }));
+}
+
+async function lightboxShows(page, photo) {
+    await page.waitForFunction(photo => document.querySelector('.poptrox-popup .pic img')?.getAttribute('src').endsWith(photo), photo);
+    await page.waitForFunction(() => window.jQuery('.poptrox-popup .pic').is(':visible') && !window.jQuery('.poptrox-popup .pic').is(':animated'));
+}
+
+test('Map view places photos by their GPS metadata and opens them in the lightbox', async t => {
+    const page = await openGallery(t, 'Justified', sizes.length, { locations: mapLocations, ignoreRange: [5] });
+    const toggle = page.locator('#header a[href="#map"]');
+    assert.equal(await toggle.textContent(), 'Map');
+    await toggle.click();
+    const map = page.getByRole('region', { name: 'Photo map' });
+    assert.ok(await map.isVisible());
+    assert.equal(await page.evaluate(() => location.hash), '#map');
+    assert.equal(await toggle.textContent(), 'Gallery');
+    assert.equal(await page.locator('#main').evaluate(main => getComputedStyle(main).visibility), 'hidden');
+
+    await page.waitForFunction(() => /^4 photos/i.test(document.querySelector('.map-status').textContent));
+    assert.match(await page.locator('.map-status').textContent(), /3 without location/i);
+    assert.deepEqual(page.metadataRequests.map(request => request.index).sort(), [0, 1, 2, 3, 4, 5, 6]);
+    assert.ok(page.metadataRequests.every(request => request.range === 'bytes=0-131071'), 'only the EXIF block is requested');
+
+    await page.waitForFunction(() => document.querySelectorAll('.map-marker').length === 3);
+    const bounds = await map.boundingBox(),
+        pins = await mapPins(page),
+        [tokyo, sydney, auckland] = [0, 2, 5].map(i => pins.find(pin => pin.photo === `/photos/images/fulls/${i}.jpg`));
+    assert.equal(sydney.count, 2, 'photos taken at the same spot share a pin');
+    assert.equal(tokyo.count + auckland.count, 2);
+    assert.ok(tokyo.bottom < sydney.bottom && tokyo.left < sydney.left && auckland.left > sydney.left && auckland.bottom > sydney.bottom,
+        'pins follow latitude and longitude, including southern and eastern references');
+    for (const pin of pins) {
+        assert.ok(pin.left >= bounds.x && pin.right <= bounds.x + bounds.width && pin.top >= bounds.y && pin.bottom <= bounds.y + bounds.height,
+            'the map frames every located photo');
+    }
+
+    await page.locator('.map-marker', { has: page.locator('img[src$="/fulls/0.jpg"]') }).click();
+    await lightboxShows(page, '/0.jpg');
+    await page.keyboard.press('Escape');
+    await page.waitForFunction(() => !document.body.classList.contains('modal-active'));
+    await page.waitForFunction(() => document.activeElement.matches('.map-marker') &&
+        document.activeElement.querySelector('img').src.endsWith('/0.jpg'));
+
+    await page.locator('.map-marker.group').click();
+    assert.match(await page.locator('.map-popup').textContent(), /2 photos here/i);
+    assert.equal(await page.evaluate(() => document.activeElement.getAttribute('aria-label')), 'View photo 1 of 2');
+    await page.getByRole('button', { name: 'View photo 2 of 2' }).click();
+    await lightboxShows(page, '/4.jpg');
+    await page.keyboard.press('Escape');
+    await page.waitForFunction(() => !document.body.classList.contains('modal-active'));
+
+    await page.getByRole('link', { name: 'Display' }).click();
+    assert.equal(await page.evaluate(() => document.getElementById('map-view').inert), true, 'display mode covers the map');
+    await page.keyboard.press('Escape');
+    await page.waitForFunction(() => document.getElementById('display').hidden && !document.getElementById('map-view').inert);
+    assert.ok(await map.isVisible());
+
+    await page.getByRole('link', { name: 'Gallery' }).click();
+    await page.waitForFunction(() => document.getElementById('map-view').hidden);
+    assert.equal(await page.evaluate(() => location.hash), '');
+    assert.equal(await toggle.textContent(), 'Map');
+    assert.equal(await page.locator('#main').evaluate(main => getComputedStyle(main).visibility), 'visible');
+
+    await toggle.click();
+    assert.ok(await map.isVisible());
+    await page.goBack();
+    await page.waitForFunction(() => document.getElementById('map-view').hidden);
+    await page.goForward();
+    await page.waitForFunction(() => !document.getElementById('map-view').hidden);
+    assert.equal(await page.locator('.map-marker').count(), 3);
+    assert.equal(page.metadataRequests.length, sizes.length, 'locations are read once');
+});
+
+test('Map view opens from a link and handles missing locations and galleries', async t => {
+    let page = await openGallery(t, 'Thumbnail', sizes.length, { hash: '#map' });
+    await page.getByRole('heading', { name: 'No locations yet' }).waitFor();
+    assert.equal(await page.locator('.map-status').isHidden(), true);
+    assert.equal(await page.locator('.map-marker').count(), 0);
+    await page.getByRole('link', { name: 'Gallery' }).click();
+    assert.equal(await page.locator('#map-view').isHidden(), true);
+    assert.equal(await page.evaluate(() => location.hash), '');
+
+    page = await openGallery(t, 'Carousel', sizes.length, { locations: { 3: mapLocations[5] } });
+    await page.getByRole('link', { name: 'Map' }).click();
+    await page.waitForFunction(() => /^1 photo/i.test(document.querySelector('.map-status').textContent));
+    assert.match(await page.locator('.map-status').textContent(), /6 without location/i);
+    assert.deepEqual((await mapPins(page)).map(pin => pin.photo), ['/photos/images/thumbs/3.jpg'], 'pins reuse the gallery image');
+
+    page = await openGallery(t, 'Justified', sizes.length, { locations: { 0: mapLocations[0] } });
+    await page.route('**/assets/js/leaflet.js', route => route.abort());
+    await page.getByRole('link', { name: 'Map' }).click();
+    await page.getByRole('heading', { name: 'Map unavailable' }).waitFor();
+    assert.equal(page.metadataRequests.length, 0);
+    await page.unroute('**/assets/js/leaflet.js');
+    await page.getByRole('link', { name: 'Gallery' }).click();
+    await page.getByRole('link', { name: 'Map' }).click();
+    await page.waitForFunction(() => /^1 photo/i.test(document.querySelector('.map-status').textContent));
+    assert.equal(await page.locator('.map-notice').isHidden(), true, 'opening the map again retries');
+
+    page = await openGallery(t, 'Thumbnail', 0);
+    assert.equal(await page.getByRole('link', { name: 'Map' }).count(), 0);
+});
+
+test('The header keeps every button beside the title on phones', async t => {
+    const page = await openGallery(t, 'Justified');
+    for (const label of ['Map', 'Gallery']) {
+        if (label === 'Gallery') await page.getByRole('link', { name: 'Map' }).click();
+        for (const width of [320, 375, 414, 480, 736, 1100]) {
+            await page.setViewportSize({ width, height: 700 });
+            const [title, nav] = await page.evaluate(() => ['#header h1', '#header nav'].map(selector =>
+                document.querySelector(selector).getBoundingClientRect().toJSON()));
+            assert.ok(title.right <= nav.left, `the ${label} button fits at ${width}px`);
+            assert.ok(await page.getByRole('link', { name: label }).isVisible());
+        }
+    }
 });
