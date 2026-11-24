@@ -111,7 +111,7 @@
         returnFocus = trigger || document.activeElement;
         display.hidden = false;
         document.body.classList.add('display-active');
-        if (wrapper) wrapper.inert = true;
+        setInert(true);
         // Must run within the click that opened display mode.
         requestFullscreen();
         requestWakeLock();
@@ -131,7 +131,7 @@
         clearRows();
         display.hidden = true;
         document.body.classList.remove('display-active');
-        if (wrapper) wrapper.inert = false;
+        setInert(false);
         if (wakeLock) {
             ignore(wakeLock.release());
             wakeLock = null;
@@ -147,6 +147,12 @@
         // The page stays inert until full screen has been exited.
         if (exiting && exiting.then) exiting.then(restoreFocus, restoreFocus);
         else restoreFocus();
+    }
+
+    function setInert(inert) {
+        [wrapper, document.getElementById('map-view')].forEach(function (element) {
+            if (element) element.inert = inert;
+        });
     }
 
     function restoreFocus() {

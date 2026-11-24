@@ -40,7 +40,7 @@ gulp.task('sass:watch', function () {
 
 // minify js
 gulp.task('minify-js', function () {
-    return gulp.src(['./assets/js/main.js', './assets/js/display.js'])
+    return gulp.src(['./assets/js/main.js', './assets/js/display.js', './assets/js/map.js'])
         .pipe(uglify())
         .pipe(rename({suffix: '.min'}))
         .pipe(gulp.dest('./assets/js'));

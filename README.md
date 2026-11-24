@@ -58,6 +58,31 @@ repeated on screen unless the gallery is too small to fill it.
 - Link to `index.html#display` to open the site straight into display mode,
   for example on a TV or a photo frame.
 
+## Map view
+
+The **Map** button in the site's bar switches the gallery to a map showing
+where each photo was taken, using the GPS coordinates in the photo's EXIF
+metadata. The button then reads **Gallery**; click it, or use the browser's
+Back button, to return.
+
+- Each photo is a small pin. Nearby photos share a pin with a count; clicking
+  it zooms in until they separate, and photos taken at the same spot are
+  listed in a popup.
+- Clicking a photo opens it in the usual viewer, with its EXIF caption.
+- Locations are read when the map is first opened, downloading only the first
+  128 KB of each full-size photo, where EXIF is stored. Photos without
+  coordinates are counted but not placed.
+- Link to `index.html#map` to open the site straight into the map.
+
+Photos only appear when their files keep their location. Many editors and
+phones remove it on export (in Lightroom, the *Remove Location Info* export
+option), so check that setting. Keep in mind that published coordinates are
+readable by anyone who downloads a photo, map or no map.
+
+The map uses [Leaflet](https://leafletjs.com) (bundled as `assets/js/leaflet.js`
+and `assets/css/leaflet.css`) and Esri's World Dark Gray Canvas tiles; the tile
+source is set at the top of `assets/js/map.js`.
+
 To rebuild the committed CSS and JavaScript after editing their sources:
 
 ```sh
