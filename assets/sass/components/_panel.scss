@@ -1,106 +1,90 @@
-///
-/// Multiverse by HTML5 UP
-/// html5up.net | @ajlkn
-/// Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
-///
+@use '../libs/vars' as *;
 
-/* Panel */
+dialog.panel {
+    background: rgb(36 38 41 / 0.97);
+    border: 0;
+    border-top: 1px solid var(--border);
+    bottom: var(--header-height);
+    color: var(--fg);
+    inset: auto 0 var(--header-height) 0;
+    margin: 0;
+    max-height: calc(80dvh - var(--header-height));
+    max-width: none;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 3.5rem 4rem 2rem;
+    position: fixed;
+    width: 100%;
 
-	.panel {
-		@include padding(4em, 4em);
-		@include vendor('transform', 'translateY(100vh)');
-		@include vendor('transition', 'transform #{_duration(panel)} ease');
-		-webkit-overflow-scrolling: touch;
-		background: transparentize(_palette(bg), 0.025);
-		bottom: _size(header);
-		left: 0;
-		max-height: calc(80vh - #{_size(header)});
-		overflow-y: auto;
-		position: fixed;
-		width: 100%;
-		z-index: _misc(z-index-base) + 1;
+    &::backdrop {
+        backdrop-filter: blur(6px);
+        background: rgb(20 21 23 / 0.55);
+        overflow: hidden;
+        overscroll-behavior: contain;
+    }
 
-		&.active {
-			@include vendor('transform', 'translateY(1px)');
-		}
+    @media (prefers-reduced-motion: no-preference) {
+        opacity: 1;
+        translate: 0 0;
+        transition: opacity 0.25s ease, translate 0.25s cubic-bezier(0.2, 0.8, 0.2, 1),
+            overlay 0.25s allow-discrete, display 0.25s allow-discrete;
 
-		> .inner {
-			margin: 0 auto;
-			max-width: 100%;
-			width: 75em;
+        @starting-style {
+            opacity: 0;
+            translate: 0 1.5rem;
+        }
+    }
 
-			&.split {
-				@include vendor('display', 'flex');
+    > .inner {
+        margin: 0 auto;
+        max-width: 75rem;
+        width: 100%;
 
-				> div {
-					margin-left: 4em;
-					width: 50%;
-				}
+        &.split {
+            display: grid;
+            gap: 3rem;
+            grid-template-columns: minmax(0, 1fr);
+        }
+    }
 
-				> :first-child {
-					margin-left: 0;
-				}
-			}
-		}
+    > .closer {
+        background: transparent url('images/close.svg') center / 2.25rem no-repeat;
+        border: 0;
+        box-shadow: none;
+        cursor: pointer;
+        height: 3.5rem;
+        min-block-size: 3.5rem;
+        opacity: 0.45;
+        padding: 0;
+        position: absolute;
+        right: 0.75rem;
+        top: 0.75rem;
+        transition: opacity var(--duration-fast) ease;
+        width: 3.5rem;
 
-		> .closer {
-			@include vendor('transition', 'opacity #{_duration(transition)} ease-in-out');
-			background-image: url('images/close.svg');
-			background-position: center;
-			background-repeat: no-repeat;
-			background-size: 3em;
-			cursor: pointer;
-			height: 5em;
-			opacity: 0.25;
-			position: absolute;
-			right: 0;
-			top: 0;
-			width: 5em;
-			z-index: 2;
+        &:hover,
+        &:focus-visible {
+            box-shadow: none;
+            opacity: 1;
+        }
+    }
 
-			&:hover {
-				opacity: 1.0;
-			}
-		}
+    @include breakpoint(large) {
+        padding: 3rem 2.5rem 1.75rem;
+    }
 
-		@include breakpoint(large) {
-			@include padding(3em, 3em);
+    @include breakpoint(small) {
+        border-bottom: 1px solid var(--border);
+        border-top: 0;
+        bottom: auto;
+        inset: var(--header-height) 0 auto 0;
+        padding: 3rem 1.5rem 1.5rem;
 
-			> .inner {
-				&.split {
-					> div {
-						margin-left: 3em;
-					}
-				}
-			}
-
-			> .closer {
-				background-size: 2.5em;
-				background-position: 75% 25%;
-			}
-		}
-
-		@include breakpoint(medium) {
-			> .inner {
-				&.split {
-					@include vendor('flex-direction', 'column');
-
-					> div {
-						margin-left: 0;
-						width: 100%;
-					}
-				}
-			}
-		}
-
-		@include breakpoint(small) {
-			@include vendor('transform', 'translateY(-100vh)');
-			@include padding(4em, 2em);
-			bottom: auto;
-			top: calc(#{_size(header)} - 1px);
-
-			&.active {
-				@include vendor('transform', 'translateY(0)');
-			}
-		}
-	}
+        @media (prefers-reduced-motion: no-preference) {
+            @starting-style {
+                opacity: 0;
+                translate: 0 -1.5rem;
+            }
+        }
+    }
+}

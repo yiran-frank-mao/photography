@@ -1,22 +1,11 @@
-///
-/// Multiverse by HTML5 UP
-/// html5up.net | @ajlkn
-/// Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
-///
+#footer {
+    .copyright {
+        color: var(--fg-light);
+        font-size: 0.9rem;
+        margin-bottom: 0;
 
-/* Footer */
-
-	#footer {
-		.ad {
-			margin: 0 0 1em 0;
-			max-height: 150px;
-		}
-		.copyright {
-			color: _palette(fg-light);
-			font-size: 0.9em;
-
-			a {
-				color: inherit;
-			}
-		}
-	}
+        a {
+            color: inherit;
+        }
+    }
+}
