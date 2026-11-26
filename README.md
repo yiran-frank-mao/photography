@@ -87,13 +87,24 @@ To rebuild the committed CSS and JavaScript after editing their sources:
 
 ```sh
 npm ci
-npx gulp compile-sass
+npm run build
+```
+
+To resize newly added source photos in `images/` into `images/fulls/` and `images/thumbs/`, or re-optimize existing thumbnails:
+
+```sh
+npm run resize
+npm run optimize-thumbs
 ```
 
 Run the browser regression checks with `npm test`. They use an installed
 `/usr/bin/chromium`, a browser specified by `CHROMIUM_PATH`, or Playwright's
 Chromium (install it with `npx playwright install chromium`). The tests render
 the Liquid templates with fixture images and exercise the committed assets.
+
+## Browser support
+
+**Browser Support:** Target latest evergreen browsers (Chrome, Edge, Firefox, and Safari) using native modern web APIs (ES modules, `<dialog>`, CSS Grid, CSS Scroll Snap, `dvh`, `linear()` spring easing, CSS `mask` SVG icons, `fetch` range requests, and `DataView` EXIF parsing) without legacy polyfills or obsolete vendor prefixes.
 
 ## Acknowledgment
 - I am not a web developer. All the credit for this website goes to [Ram](https://github.com/rampatra).

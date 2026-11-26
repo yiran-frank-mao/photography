@@ -1,448 +1,397 @@
-/* Map view */
+@use '../libs/vars' as *;
 
-	body.map-active {
-		overflow: hidden;
+@keyframes map-pin-in {
+    from {
+        opacity: 0;
+        scale: 0.5;
+    }
 
-		#main {
-			visibility: hidden;
-		}
-	}
+    to {
+        opacity: 1;
+        scale: 1;
+    }
+}
 
-	#map-view {
-		--map-glass: rgba(20, 21, 23, 0.72);
-		@include vendor('transition', 'filter #{_duration(panel)} ease');
-		background: _palette(bg-alt);
-		bottom: _size(header);
-		left: 0;
-		position: fixed;
-		right: 0;
-		top: 0;
-		z-index: _misc(z-index-base);
+body.map-active {
+    overflow: hidden;
 
-		&[hidden] {
-			display: none;
-		}
+    #main {
+        visibility: hidden;
+    }
+}
 
-		// Dim and blur the map behind the About panel and the lightbox, as the gallery does.
-		&:after {
-			@include vendor('pointer-events', 'none');
-			@include vendor('transition', (
-				'opacity #{_duration(panel)} ease',
-				'visibility #{_duration(panel)}'
-			));
-			background: _palette(bg-overlay-alt);
-			bottom: 0;
-			content: '';
-			left: 0;
-			opacity: 0;
-			position: absolute;
-			right: 0;
-			top: 0;
-			visibility: hidden;
-			z-index: 2000;
-		}
+#map-view {
+    --map-glass: rgb(20 21 23 / 0.72);
+    background: var(--bg-alt);
+    inset: 0 0 var(--header-height) 0;
+    position: fixed;
+    z-index: 10000;
 
-		body.content-active &,
-		body.modal-active & {
-			@include vendor('filter', 'blur(6px)');
+    &[hidden] {
+        display: none;
+    }
 
-			&:after {
-				@include vendor('pointer-events', 'auto');
-				opacity: 1;
-				visibility: visible;
-			}
-		}
+    .map-canvas {
+        height: 100%;
+        width: 100%;
+    }
 
-		.map-canvas {
-			height: 100%;
-			width: 100%;
-		}
+    .leaflet-container {
+        background: #161718;
+        font: inherit;
+        letter-spacing: 0.025em;
+        outline: 0;
+    }
 
-		.leaflet-container {
-			background: #161718;
-			font: inherit;
-			letter-spacing: _font(kerning);
-			outline: 0;
-		}
+    .leaflet-tile-pane {
+        transition: opacity 0.6s ease;
+    }
 
-		.leaflet-tile-pane {
-			@include vendor('transition', 'opacity 0.6s ease');
-		}
+    &.quiet .leaflet-tile-pane {
+        opacity: 0.45;
+    }
 
-		&.quiet .leaflet-tile-pane {
-			opacity: 0.45;
-		}
+    a {
+        border-bottom: 0;
+    }
 
-		a {
-			border-bottom: 0;
-		}
+    .leaflet-bar {
+        backdrop-filter: blur(12px);
+        background: var(--map-glass);
+        border: 0;
+        border-radius: 1.5rem;
+        box-shadow: 0 0.5rem 1.5rem rgb(0 0 0 / 0.35);
+        overflow: hidden;
 
-		// Glass controls, matching display mode.
-		.leaflet-bar {
-			-webkit-backdrop-filter: blur(12px);
-			backdrop-filter: blur(12px);
-			background: var(--map-glass);
-			border: 0;
-			border-radius: 1.5em;
-			box-shadow: 0 0.5em 1.5em rgba(0, 0, 0, 0.35);
-			overflow: hidden;
+        a {
+            align-items: center;
+            background: transparent;
+            border-bottom: 1px solid rgb(255 255 255 / 0.08);
+            border-radius: 0;
+            color: var(--fg-bold);
+            display: flex;
+            font: 300 1.25rem/1 var(--font-sans);
+            height: 2.5rem;
+            justify-content: center;
+            transition: background-color var(--duration-fast) ease;
+            width: 2.5rem;
 
-			a {
-				@include vendor('transition', 'background-color #{_duration(transition)} ease-in-out');
-				background: transparent;
-				border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-				border-radius: 0;
-				color: _palette(fg-bold);
-				font: 300 1.25em/2em _font(family);
-				height: 2em;
-				width: 2em;
+            &:last-child {
+                border-bottom: 0;
+            }
 
-				&:last-child {
-					border-bottom: 0;
-				}
+            &:hover,
+            &:focus-visible {
+                background: rgb(255 255 255 / 0.12);
+                color: var(--fg-bold);
+            }
 
-				&:hover,
-				&:focus-visible {
-					background: rgba(255, 255, 255, 0.12);
-					color: _palette(fg-bold) !important;
-				}
+            &:focus-visible {
+                outline: 2px solid var(--fg-bold);
+                outline-offset: -2px;
+            }
 
-				&:focus-visible {
-					outline: 2px solid _palette(fg-bold);
-					outline-offset: -2px;
-				}
+            &.leaflet-disabled {
+                background: transparent;
+                color: var(--fg-light);
+            }
+        }
 
-				&.leaflet-disabled {
-					background: transparent;
-					color: _palette(fg-light) !important;
-				}
-			}
+        .map-fit {
+            font-size: 1rem;
+        }
+    }
 
-			.map-fit {
-				font-size: 1em;
-				height: 2.5em;
-				line-height: 2.5em;
-				width: 2.5em;
-			}
-		}
+    .leaflet-top.leaflet-right .leaflet-control {
+        margin: 1.25rem 1.25rem 0 0;
+    }
 
-		.leaflet-top.leaflet-right .leaflet-control {
-			margin: 1.25em 1.25em 0 0;
-		}
+    .leaflet-control-attribution {
+        backdrop-filter: blur(12px);
+        background: rgb(20 21 23 / 0.6);
+        border-radius: 0.5rem 0 0 0;
+        color: var(--fg-medium);
+        font-size: 0.65rem;
+        letter-spacing: 0.02em;
+        padding: 0.15rem 0.75rem;
 
-		.leaflet-control-attribution {
-			-webkit-backdrop-filter: blur(12px);
-			backdrop-filter: blur(12px);
-			background: rgba(20, 21, 23, 0.6);
-			border-radius: 0.5em 0 0 0;
-			color: _palette(fg-medium);
-			font-size: 0.6em;
-			letter-spacing: 0.02em;
-			padding: 0.15em 0.75em;
+        a {
+            color: var(--fg);
 
-			a {
-				color: _palette(fg);
+            &:hover {
+                color: var(--fg-bold);
+            }
+        }
+    }
 
-				&:hover {
-					color: _palette(fg-bold) !important;
-				}
-			}
-		}
+    .map-marker {
+        background: none;
+        border: 0;
+        outline: 0;
 
-		// Photo pins.
-		.map-marker {
-			background: none;
-			border: 0;
-			outline: 0;
+        &:focus-visible .map-pin-frame {
+            box-shadow: 0 0 0 3px var(--accent), 0 0.5rem 1.25rem rgb(0 0 0 / 0.55);
+        }
+    }
 
-			&:focus-visible .map-pin-frame {
-				box-shadow: 0 0 0 3px _palette(accent1), 0 0.5em 1.25em rgba(0, 0, 0, 0.55);
-			}
-		}
+    .map-pin {
+        animation: map-pin-in 0.45s cubic-bezier(0.2, 0.7, 0.2, 1.2) backwards;
+        display: block;
+        height: 100%;
+        isolation: isolate;
+        position: relative;
+        transform-origin: 50% calc(100% + 8px);
+        transition: scale 0.25s cubic-bezier(0.2, 0.7, 0.2, 1.2);
+        width: 100%;
 
-		.map-pin {
-			@include vendor('animation', 'map-pin-in 0.45s cubic-bezier(0.2, 0.7, 0.2, 1.2) backwards');
-			@include vendor('transition', 'transform 0.25s cubic-bezier(0.2, 0.7, 0.2, 1.2)');
-			display: block;
-			height: 100%;
-			isolation: isolate;
-			position: relative;
-			transform-origin: 50% calc(100% + 8px);
-			width: 100%;
+        &::after {
+            border: 7px solid transparent;
+            border-bottom: 0;
+            border-top-color: var(--fg-bold);
+            bottom: -7px;
+            content: '';
+            filter: drop-shadow(0 2px 2px rgb(0 0 0 / 0.35));
+            left: 50%;
+            margin-left: -7px;
+            position: absolute;
+        }
 
-			// The tip points at where the photo was taken.
-			&:after {
-				border: 7px solid transparent;
-				border-bottom: 0;
-				border-top-color: _palette(fg-bold);
-				bottom: -7px;
-				content: '';
-				filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.35));
-				left: 50%;
-				margin-left: -7px;
-				position: absolute;
-			}
+        .map-marker:hover &,
+        .map-marker:focus-visible & {
+            scale: 1.12;
+        }
+    }
 
-			.map-marker:hover &,
-			.map-marker:focus-visible & {
-				transform: scale(1.12);
-			}
-		}
+    .map-pin-frame {
+        background: var(--bg);
+        border: 2px solid var(--fg-bold);
+        border-radius: 6px;
+        box-shadow: 0 0.5rem 1.25rem rgb(0 0 0 / 0.55);
+        display: block;
+        height: 100%;
+        overflow: hidden;
+        width: 100%;
 
-		.map-pin-frame {
-			background: _palette(bg);
-			border: 2px solid _palette(fg-bold);
-			border-radius: 6px;
-			box-shadow: 0 0.5em 1.25em rgba(0, 0, 0, 0.55);
-			display: block;
-			height: 100%;
-			overflow: hidden;
-			width: 100%;
+        img {
+            display: block;
+            height: 100%;
+            object-fit: cover;
+            width: 100%;
+        }
+    }
 
-			img {
-				display: block;
-				height: 100%;
-				object-fit: cover;
-				width: 100%;
-			}
-		}
+    .group .map-pin::before {
+        background: var(--border-bg-alt);
+        border: 2px solid rgb(255 255 255 / 0.75);
+        border-radius: 6px;
+        box-shadow: 0 0.25rem 0.75rem rgb(0 0 0 / 0.4);
+        content: '';
+        inset: 0;
+        position: absolute;
+        rotate: 8deg;
+        translate: 4px -2px;
+        z-index: -1;
+    }
 
-		// A second card peeks out from behind a group's pin.
-		.group .map-pin:before {
-			background: _palette(border-bg-alt);
-			border: 2px solid rgba(255, 255, 255, 0.75);
-			border-radius: 6px;
-			box-shadow: 0 0.25em 0.75em rgba(0, 0, 0, 0.4);
-			content: '';
-			height: 100%;
-			left: 0;
-			position: absolute;
-			top: 0;
-			transform: rotate(8deg) translate(4px, -2px);
-			width: 100%;
-			z-index: -1;
-		}
+    .map-pin-count {
+        background: var(--accent);
+        border: 2px solid var(--fg-bold);
+        border-radius: 1rem;
+        box-shadow: 0 0.2rem 0.5rem rgb(0 0 0 / 0.4);
+        color: var(--fg-bold);
+        font-size: 11px;
+        font-weight: 400;
+        height: 22px;
+        letter-spacing: 0;
+        line-height: 18px;
+        min-width: 22px;
+        padding: 0 5px;
+        position: absolute;
+        right: -9px;
+        text-align: center;
+        top: -9px;
+    }
 
-		.map-pin-count {
-			background: _palette(accent1);
-			border: 2px solid _palette(fg-bold);
-			border-radius: 1em;
-			box-shadow: 0 0.2em 0.5em rgba(0, 0, 0, 0.4);
-			color: _palette(fg-bold);
-			font-size: 11px;
-			font-weight: 400;
-			height: 22px;
-			letter-spacing: 0;
-			line-height: 18px;
-			min-width: 22px;
-			padding: 0 5px;
-			position: absolute;
-			right: -9px;
-			text-align: center;
-			top: -9px;
-		}
+    .map-popup {
+        .leaflet-popup-content-wrapper {
+            backdrop-filter: blur(12px);
+            background: rgb(31 34 36 / 0.92);
+            border-radius: 8px;
+            box-shadow: 0 1rem 3rem rgb(0 0 0 / 0.45);
+            color: var(--fg);
+            padding: 0;
+        }
 
-		// Photos taken at the same spot.
-		.map-popup {
-			.leaflet-popup-content-wrapper {
-				-webkit-backdrop-filter: blur(12px);
-				backdrop-filter: blur(12px);
-				background: rgba(31, 34, 36, 0.92);
-				border-radius: 8px;
-				box-shadow: 0 1em 3em rgba(0, 0, 0, 0.45);
-				color: _palette(fg);
-				padding: 0;
-			}
+        .leaflet-popup-tip {
+            background: rgb(31 34 36 / 0.92);
+            box-shadow: none;
+        }
 
-			.leaflet-popup-tip {
-				background: rgba(31, 34, 36, 0.92);
-				box-shadow: none;
-			}
+        .leaflet-popup-content {
+            font-size: 1rem;
+            line-height: 1.5;
+            margin: 0.9rem;
+            width: auto !important;
+        }
 
-			.leaflet-popup-content {
-				font-size: 1em;
-				line-height: 1.5;
-				margin: 0.9em;
-				width: auto !important;
-			}
+        a.leaflet-popup-close-button {
+            color: var(--fg-medium);
+            font: 300 1.5rem/1.5rem var(--font-sans);
+            height: 1.5rem;
+            right: 0.2rem;
+            top: 0.2rem;
+            width: 1.5rem;
 
-			a.leaflet-popup-close-button {
-				color: _palette(fg-medium);
-				font: 300 1.5em/1.5em _font(family);
-				height: 1.5em;
-				right: 0.2em;
-				top: 0.2em;
-				width: 1.5em;
+            &:hover {
+                color: var(--fg-bold);
+            }
+        }
+    }
 
-				&:hover {
-					color: _palette(fg-bold) !important;
-				}
-			}
-		}
+    .map-group-title {
+        color: var(--fg-bold);
+        font-size: 0.75rem;
+        letter-spacing: 0.1em;
+        margin: 0 2.5rem 0.75rem 0.1rem;
+        text-transform: uppercase;
+    }
 
-		.map-group-title {
-			color: _palette(fg-bold);
-			font-size: 0.7em;
-			letter-spacing: _font(kerning-alt);
-			margin: 0 2.5em 0.75em 0.1em;
-			text-transform: uppercase;
-		}
+    .map-group-grid {
+        display: grid;
+        gap: 6px;
+        grid-template-columns: repeat(var(--columns), 5.5rem);
+        max-height: 18rem;
+        overflow-y: auto;
 
-		.map-group-grid {
-			display: grid;
-			gap: 6px;
-			grid-template-columns: repeat(var(--columns), 5.5em);
-			max-height: 18em;
-			overflow-y: auto;
+        button {
+            background: var(--bg);
+            border-radius: 4px;
+            box-shadow: none;
+            display: block;
+            height: 5.5rem;
+            min-block-size: 5.5rem;
+            overflow: hidden;
+            padding: 0;
+            width: 5.5rem;
 
-			button {
-				background: _palette(bg);
-				border-radius: 4px;
-				box-shadow: none;
-				display: block;
-				font-size: inherit;
-				height: 5.5em;
-				letter-spacing: 0;
-				line-height: normal;
-				overflow: hidden;
-				padding: 0;
-				width: 5.5em;
+            &:hover {
+                box-shadow: none;
+            }
 
-				&:hover {
-					box-shadow: none;
-				}
+            img {
+                display: block;
+                height: 100%;
+                object-fit: cover;
+                opacity: 0.85;
+                transition: scale 0.3s ease, opacity 0.3s ease;
+                width: 100%;
+            }
 
-				img {
-					@include vendor('transition', 'transform 0.3s ease, opacity 0.3s ease');
-					display: block;
-					height: 100%;
-					object-fit: cover;
-					opacity: 0.85;
-					width: 100%;
-				}
+            &:hover img,
+            &:focus-visible img {
+                opacity: 1;
+                scale: 1.06;
+            }
 
-				&:hover img,
-				&:focus-visible img {
-					opacity: 1;
-					transform: scale(1.06);
-				}
+            &:focus-visible {
+                outline: 2px solid var(--accent);
+                outline-offset: -2px;
+            }
+        }
+    }
+}
 
-				&:focus-visible {
-					outline: 2px solid _palette(accent1);
-					outline-offset: -2px;
-				}
-			}
-		}
-	}
+.map-status {
+    align-items: center;
+    backdrop-filter: blur(12px);
+    background: rgb(20 21 23 / 0.72);
+    border-radius: 2rem;
+    box-shadow: 0 0.5rem 1.5rem rgb(0 0 0 / 0.35);
+    color: var(--fg-bold);
+    display: inline-flex;
+    font-size: 0.75rem;
+    gap: 0.5rem;
+    left: 1.5rem;
+    letter-spacing: 0.1em;
+    line-height: 1;
+    padding: 0.95rem 1.35rem;
+    pointer-events: none;
+    position: absolute;
+    text-transform: uppercase;
+    top: 1.5rem;
+    white-space: nowrap;
+    z-index: 1000;
 
-	.map-status {
-		-webkit-backdrop-filter: blur(12px);
-		backdrop-filter: blur(12px);
-		background: rgba(20, 21, 23, 0.72);
-		border-radius: 2em;
-		box-shadow: 0 0.5em 1.5em rgba(0, 0, 0, 0.35);
-		color: _palette(fg-bold);
-		font-size: 0.75em;
-		left: 1.65em;
-		letter-spacing: _font(kerning-alt);
-		line-height: 1;
-		padding: 1em 1.5em;
-		pointer-events: none;
-		position: absolute;
-		text-transform: uppercase;
-		top: 1.65em;
-		white-space: nowrap;
-		z-index: 1000;
+    &[hidden] {
+        display: none;
+    }
+}
 
-		&[hidden] {
-			display: none;
-		}
+.map-status-detail {
+    border-left: 1px solid rgb(255 255 255 / 0.15);
+    color: var(--fg-medium);
+    margin-left: 0.5rem;
+    padding-left: 0.9rem;
+}
 
-		.fa {
-			color: _palette(fg);
-			margin-right: 0.5em;
-		}
-	}
+.map-notice {
+    backdrop-filter: blur(12px);
+    background: rgb(31 34 36 / 0.85);
+    border-radius: 8px;
+    box-shadow: 0 1rem 3rem rgb(0 0 0 / 0.45);
+    left: 50%;
+    max-width: calc(100% - 3rem);
+    padding: 2.25rem 2.5rem 1rem;
+    position: absolute;
+    text-align: center;
+    top: 50%;
+    translate: -50% -50%;
+    width: 26rem;
+    z-index: 1000;
 
-	.map-status-detail {
-		border-left: 1px solid rgba(255, 255, 255, 0.15);
-		color: _palette(fg-medium);
-		margin-left: 1em;
-		padding-left: 1em;
-	}
+    &[hidden] {
+        display: none;
+    }
 
-	.map-notice {
-		-webkit-backdrop-filter: blur(12px);
-		backdrop-filter: blur(12px);
-		background: rgba(31, 34, 36, 0.85);
-		border-radius: 8px;
-		box-shadow: 0 1em 3em rgba(0, 0, 0, 0.45);
-		left: 50%;
-		max-width: calc(100% - 3em);
-		padding: 2.5em 3em 1em 3em;
-		position: absolute;
-		text-align: center;
-		top: 50%;
-		transform: translate(-50%, -50%);
-		width: 26em;
-		z-index: 1000;
+    .map-notice-icon {
+        color: var(--fg-light);
+        display: inline-flex;
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+    }
 
-		&[hidden] {
-			display: none;
-		}
+    h2 {
+        font-size: 1rem;
+    }
 
-		.fa {
-			color: _palette(fg-light);
-			display: block;
-			font-size: 2.5em;
-			margin-bottom: 0.4em;
-		}
+    p {
+        font-size: 0.9rem;
+        margin-bottom: 1.5rem;
+    }
+}
 
-		h2 {
-			font-size: 1em;
-		}
+@include breakpoint(small) {
+    #map-view {
+        inset: var(--header-height) 0 0 0;
 
-		p {
-			font-size: 0.9em;
-			margin-bottom: 1.5em;
-		}
-	}
+        .leaflet-top.leaflet-right .leaflet-control {
+            margin: 1rem 1rem 0 0;
+        }
+    }
 
-	@include keyframes(map-pin-in) {
-		from {
-			opacity: 0;
-			transform: scale(0.5);
-		}
+    .map-status {
+        left: 1rem;
+        top: 1rem;
+    }
 
-		to {
-			opacity: 1;
-			transform: none;
-		}
-	}
+    .map-status-detail {
+        display: none;
+    }
+}
 
-	@include breakpoint(small) {
-		#map-view {
-			bottom: 0;
-			top: _size(header);
-
-			.leaflet-top.leaflet-right .leaflet-control {
-				margin: 1em 1em 0 0;
-			}
-		}
-
-		.map-status {
-			left: 1.35em;
-			top: 1.35em;
-		}
-
-		.map-status-detail {
-			display: none;
-		}
-	}
-
-	@media (prefers-reduced-motion: reduce) {
-		#map-view .map-pin {
-			@include vendor('animation', 'none');
-			@include vendor('transition', 'none');
-		}
-	}
+@media (prefers-reduced-motion: reduce) {
+    #map-view .map-pin {
+        animation: none;
+        transition: none;
+    }
+}

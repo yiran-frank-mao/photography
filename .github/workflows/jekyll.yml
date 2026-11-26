@@ -36,7 +36,7 @@ jobs:
       # added or changed files to the repository.
       contents: write
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v4
       - name: Generate feed.xml
         id: generatefeed
         uses: yiran-frank-mao/feedable@master

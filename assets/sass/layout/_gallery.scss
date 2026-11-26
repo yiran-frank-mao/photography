@@ -1,17 +1,18 @@
-// Alternate layouts use the real image dimensions instead of cropped backgrounds.
 #main.gallery-ready {
     display: block;
     position: relative;
 
     .thumb {
+        height: auto;
         min-height: 0;
-        transition-delay: 0s;
 
         > .image > img {
-            display: block;
-            height: 100%;
-            width: 100%;
             object-fit: contain;
+            scale: none;
+        }
+
+        > .image:hover > img {
+            scale: none;
         }
     }
 
@@ -21,89 +22,119 @@
     }
 
     &.gallery-carousel {
+        outline: none;
+
         .carousel-viewport {
             position: relative;
-            overflow: hidden;
-            touch-action: pan-y;
         }
 
         .carousel-track {
             display: flex;
-            transition: transform 0.3s ease;
+            overflow-x: auto;
+            overscroll-behavior-x: contain;
+            scroll-snap-type: x mandatory;
+            scrollbar-width: none;
+
+            @media (prefers-reduced-motion: no-preference) {
+                scroll-behavior: smooth;
+            }
         }
 
         .thumb {
             flex: 0 0 100%;
-            height: 70vh;
-            max-height: 640px;
+            height: min(70dvh, 640px);
+            scroll-snap-align: center;
+            scroll-snap-stop: always;
             width: 100%;
-
-            &[aria-hidden="true"] {
-                visibility: hidden;
-            }
         }
 
         .carousel-nav {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            background: rgba(0, 0, 0, 0.65);
+            background: rgb(0 0 0 / 0.65);
             border-radius: 50%;
             box-shadow: none;
-            font-size: 1.25em;
-            height: 2.5em;
-            line-height: 2.5em;
+            font-size: 1.2rem;
+            height: 2.75rem;
+            min-block-size: 2.75rem;
             padding: 0;
-            width: 2.5em;
+            position: absolute;
+            top: 50%;
+            translate: 0 -50%;
+            width: 2.75rem;
             z-index: 2;
 
-            &.previous { left: 0.5em; }
-            &.next { right: 0.5em; }
+            &:hover:not(:disabled) {
+                background: rgb(0 0 0 / 0.85);
+                box-shadow: none;
+                color: var(--fg-bold);
+            }
+
+            &.previous { left: 0.65rem; }
+            &.next { right: 0.65rem; }
         }
 
         .carousel-counter {
-            position: absolute;
-            bottom: 0.75em;
+            background: rgb(0 0 0 / 0.65);
+            border-radius: 1rem;
+            bottom: 0.75rem;
+            color: var(--fg-bold);
+            font-size: 0.9rem;
             left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.65);
-            border-radius: 1em;
-            color: #fff;
-            padding: 0.1em 0.75em;
+            padding: 0.15rem 0.8rem;
             pointer-events: none;
+            position: absolute;
+            translate: -50% 0;
         }
 
         .carousel-indicators {
             display: flex;
             flex-wrap: wrap;
+            gap: 0.25rem;
             justify-content: center;
-            padding: 0.5em;
+            padding: 0.5rem;
         }
 
         .carousel-dot {
+            background: transparent;
+            border: 0;
             border-radius: 50%;
-            height: 1em;
-            line-height: 1em;
-            margin: 0.25em;
+            box-shadow: none;
+            height: 1.75rem;
+            min-block-size: 1.75rem;
             padding: 0;
-            width: 1em;
+            position: relative;
+            width: 1.75rem;
 
-            &[aria-current="true"] {
-                background: #fff;
+            &::before {
+                background: transparent;
+                border: 2px solid var(--fg-medium);
+                border-radius: 50%;
+                content: '';
+                display: block;
+                height: 0.65rem;
+                transition: scale 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+                width: 0.65rem;
+            }
+
+            &:hover:not(:disabled) {
+                box-shadow: none;
+
+                &::before {
+                    border-color: var(--fg-bold);
+                }
+            }
+
+            &[aria-current="true"]::before {
+                background: var(--fg-bold);
+                border-color: var(--fg-bold);
+                scale: 1.3;
             }
         }
 
         &:focus-visible,
         button:focus-visible,
         a:focus-visible {
-            outline: 2px solid #fff !important;
+            outline: 2px solid var(--fg-bold);
             outline-offset: -2px;
         }
-    }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    #main.gallery-ready.gallery-carousel .carousel-track {
-        transition: none;
     }
 }

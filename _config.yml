@@ -27,3 +27,16 @@ author: Yiran Mao
 
 feed:
   path: /feed.xml
+
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - LICENSE
+  - README.md
+  - assets/sass
+  - node_modules
+  - package.json
+  - package-lock.json
+  - scripts
+  - tests
+
